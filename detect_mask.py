@@ -46,3 +46,49 @@ def detect_and_predict_mask(frame, faceNet, maskNet):
 		faces = np.array(faces, dtype="float32")
 		preds = maskNet.predict(faces, batch_size=32)	
 	return (locs, preds)
+
+try:
+	prototxtPath = r"face_detector/deploy.prototxt"
+	weightsPath = r"face_detector/res10_300x300_ssd_iter_140000.caffemodel"
+	faceNet = cv2.dnn.readNet(prototxtPath, weightsPath)
+
+	maskNet = load_model("mask_detector.model")
+
+
+	print("[INFO] starting video stream...")
+	vs = VideoStream(src=0).start()
+	count = 0
+
+	while True:
+
+		frame = vs.read()
+		frame = imutils.resize(frame, width=400)
+
+
+		(locs, preds) = detect_and_predict_mask(frame, faceNet, maskNet)
+		count = count + 1
+
+		for (box, pred) in zip(locs, preds):
+
+			(startX, startY, endX, endY) = box
+			(mask, withoutMask) = pred
+
+
+			label = "Mask" if mask > withoutMask else "No Mask"
+			color = (0, 255, 0) if label == "Mask" else (0, 0, 255)
+
+
+			result = label
+
+			label = "{}: {:.2f}%".format(label, max(mask, withoutMask) * 100)
+
+		cv2.imshow("Frame", frame)
+		key = cv2.waitKey(1) & 0xFF
+
+		if count == 50 or key == ord("q"):
+			break
+	print(result)
+	cv2.destroyAllWindows()
+	vs.stop()
+except:
+	print('')

@@ -131,11 +131,23 @@ while True:
 		if result == "No Mask":
 			l=get_name(frame)
 			print(l)
+	
+			with open('/Users/alekh/Face-Mask-Detection/dataset/emp.csv') as csv_file:
+					csv_reader= csv.reader(csv_file, delimiter=',')
+					for row in csv_reader:
+						if row[0] == l[0]:
+							mobile = row[8]
+							client = clx.xms.Client(service_plan_id='a16f94c6233349158903ac417e09ebcc',token='c737e9a1b7e649c7b01e540ed29c88b1')
+							create = clx.xms.api.MtBatchTextSmsCreate()
+							create.sender = '+447537454915'
+							create.recipients = {'+91'+ mobile}
+							print('Message sent to '+ row[9])
+							create.body = 'Please wear your mask'
+							client.create_batch(create)
 		break
 	
-try:
-	cv2.destroyAllWindows()
-	vs.stop()
-except:
-	print('')
+
+cv2.destroyAllWindows()
+vs.stop()
+
 
